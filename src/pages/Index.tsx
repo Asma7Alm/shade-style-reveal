@@ -4,14 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Share, Save, Camera, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import PhotoUpload from "@/components/PhotoUpload";
 import ColorPalette from "@/components/ColorPalette";
 import AnalysisResults from "@/components/AnalysisResults";
+import UserMenu from "@/components/UserMenu";
 
 const Index = () => {
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Dummy AI results as requested
   const dummyResults = {
@@ -69,6 +72,7 @@ const Index = () => {
               <a href="#" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
                 Saved
               </a>
+              <UserMenu />
             </nav>
           </div>
         </div>
@@ -80,7 +84,7 @@ const Index = () => {
           {/* Hero Section */}
           <div className="text-center mb-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Discover Your Perfect Colors
+              Welcome back, {user?.user_metadata?.full_name || user?.email}!
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Upload your photo and let our AI analyze your unique features to create a personalized color palette that enhances your natural beauty.
