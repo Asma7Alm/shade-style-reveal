@@ -2,19 +2,24 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share, Save, Camera, Upload } from "lucide-react";
+import { Share, Save, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useSavedPalettes } from "@/hooks/useSavedPalettes";
 import PhotoUpload from "@/components/PhotoUpload";
 import ColorPalette from "@/components/ColorPalette";
 import AnalysisResults from "@/components/AnalysisResults";
 import UserMenu from "@/components/UserMenu";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { savePalette } = useSavedPalettes();
+  const navigate = useNavigate();
 
   // Dummy AI results as requested
   const dummyResults = {
@@ -36,18 +41,71 @@ const Index = () => {
     }, 2000);
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Palette Saved!",
-      description: "Your color palette has been saved to your collection.",
-    });
+  const handleSave = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save palettes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!showResults) {
+      toast({
+        title: "No Results",
+        description: "Please upload a photo and wait for analysis first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    const success = await savePalette(
+      uploadedPhoto,
+      dummyResults.skinTone,
+      dummyResults.hairColor,
+      dummyResults.eyeColor,
+      dummyResults.palette
+    );
+    setIsSaving(false);
+
+    if (success) {
+      // Optionally navigate to saved page after successful save
+      // navigate("/saved");
+    }
   };
 
-  const handleShare = () => {
-    toast({
-      title: "Palette Shared!",
-      description: "Share link copied to clipboard.",
-    });
+  const handleShare = async () => {
+    if (!showResults) {
+      toast({
+        title: "No Results",
+        description: "Please upload a photo and get analysis results first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const paletteText = dummyResults.palette.join(', ');
+      await navigator.clipboard.writeText(paletteText);
+      toast({
+        title: "Palette Copied!",
+        description: "Color palette copied to clipboard.",
+      });
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy palette to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBackToUpload = () => {
+    setUploadedPhoto(null);
+    setShowResults(false);
   };
 
   return (
@@ -63,15 +121,27 @@ const Index = () => {
               </h1>
             </div>
             <nav className="flex items-center space-x-6">
-              <a href="#" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/")}
+                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+              >
                 Home
-              </a>
-              <a href="#" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/")}
+                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+              >
                 Try
-              </a>
-              <a href="#" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/saved")}
+                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+              >
                 Saved
-              </a>
+              </Button>
               <UserMenu />
             </nav>
           </div>
@@ -105,55 +175,73 @@ const Index = () => {
 
           {/* Results Section */}
           {uploadedPhoto && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Photo & Analysis */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Photo</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      <img 
-                        src={uploadedPhoto} 
-                        alt="Uploaded photo" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {showResults && (
-                  <AnalysisResults results={dummyResults} />
-                )}
+            <>
+              {/* Back Button */}
+              <div className="mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={handleBackToUpload}
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to Upload</span>
+                </Button>
               </div>
 
-              {/* Color Palette */}
-              {showResults && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Photo & Analysis */}
                 <div className="space-y-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Your Personalized Palette</CardTitle>
+                      <CardTitle>Your Photo</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ColorPalette colors={dummyResults.palette} />
-                      
-                      {/* Action Buttons */}
-                      <div className="flex gap-4 mt-6">
-                        <Button onClick={handleSave} className="flex-1">
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Palette
-                        </Button>
-                        <Button onClick={handleShare} variant="outline" className="flex-1">
-                          <Share className="w-4 h-4 mr-2" />
-                          Share
-                        </Button>
+                      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img 
+                          src={uploadedPhoto} 
+                          alt="Uploaded photo" 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     </CardContent>
                   </Card>
+
+                  {showResults && (
+                    <AnalysisResults results={dummyResults} />
+                  )}
                 </div>
-              )}
-            </div>
+
+                {/* Color Palette */}
+                {showResults && (
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Your Personalized Palette</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ColorPalette colors={dummyResults.palette} />
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-4 mt-6">
+                          <Button 
+                            onClick={handleSave} 
+                            className="flex-1"
+                            disabled={isSaving}
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {isSaving ? "Saving..." : "Save Palette"}
+                          </Button>
+                          <Button onClick={handleShare} variant="outline" className="flex-1">
+                            <Share className="w-4 h-4 mr-2" />
+                            Share
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Loading State */}
