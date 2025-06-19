@@ -108,6 +108,11 @@ const Index = () => {
     setShowResults(false);
   };
 
+  const handleHomeClick = () => {
+    setUploadedPhoto(null);
+    setShowResults(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       {/* Header */}
@@ -117,23 +122,16 @@ const Index = () => {
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                FashionAI
+                TrueHue
               </h1>
             </div>
             <nav className="flex items-center space-x-6">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/")}
+                onClick={handleHomeClick}
                 className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
               >
                 Home
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/")}
-                className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
-              >
-                Try
               </Button>
               <Button
                 variant="ghost"

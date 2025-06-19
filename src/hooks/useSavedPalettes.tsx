@@ -43,7 +43,15 @@ export const useSavedPalettes = () => {
         return;
       }
 
-      setSavedPalettes(data || []);
+      // Convert the data to match our SavedPalette interface
+      const formattedPalettes = data?.map(palette => ({
+        ...palette,
+        color_palette: Array.isArray(palette.color_palette) 
+          ? palette.color_palette as string[]
+          : []
+      })) || [];
+
+      setSavedPalettes(formattedPalettes);
     } catch (error) {
       console.error('Error:', error);
       toast({
