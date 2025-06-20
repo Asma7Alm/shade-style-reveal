@@ -51,7 +51,7 @@ const AuthForm = ({ isLogin, onToggleMode }: AuthFormProps) => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               full_name: fullName,
             },
@@ -88,7 +88,7 @@ const AuthForm = ({ isLogin, onToggleMode }: AuthFormProps) => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
 
       if (error) {
