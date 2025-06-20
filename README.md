@@ -1,8 +1,8 @@
-## TrueHue: AI-Powered Colour Analysis Tool
+## FashionAI: AI-Powered Colour Analysis Tool
 
 TrueHue is an AI tool that analyses a person’s skin tone, hair, and eye colour from a photo to suggest a personalised colour palette — for example, which exact shades of blue, red, or green suit them best.
 
-## 🌟 Why TrueHue?
+## 🌟 Why FashionAI?
 
 People often wear colours that don’t suit them, leading to wasted time, money, and confidence. TrueHue helps users:
 
