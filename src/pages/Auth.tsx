@@ -22,11 +22,20 @@ const Auth = () => {
   useEffect(() => {
     // Check if this is a password recovery link
     const type = searchParams.get('type');
-    if (type === 'recovery') {
-      setShowPasswordReset(true);
-      toast({
-        title: "Password Reset",
-        description: "Please enter your new password below.",
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+    
+    if (type === 'recovery' && accessToken && refreshToken) {
+      // Set the session from the URL parameters
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(() => {
+        setShowPasswordReset(true);
+        toast({
+          title: "Password Reset",
+          description: "Please enter your new password below.",
+        });
       });
     }
   }, [searchParams, toast]);
@@ -145,7 +154,11 @@ const Auth = () => {
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => setShowPasswordReset(false)}
+                  onClick={() => {
+                    setShowPasswordReset(false);
+                    // Clear the URL parameters
+                    window.history.replaceState({}, document.title, "/auth");
+                  }}
                   className="text-sm text-purple-600 hover:text-purple-700 underline"
                 >
                   Back to Login
